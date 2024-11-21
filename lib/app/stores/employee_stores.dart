@@ -11,33 +11,21 @@ class EmployeeStores extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
+
   Future<void> loadEmployees() async {
     isLoading = true;
+    employees = await repository.getAllEmployees();
+    isLoading = false;
     notifyListeners();
-
-    try {
-      employees = await repository.getAllEmployees();
-      filteredEmployees = employees;
-      error = null;
-    } catch (e) {
-      error = 'Erro ao carregar os funcionários';
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
   }
 
   void filterEmployees(String value) {
     if (value.isEmpty) {
-      filteredEmployees = employees;
+      filteredEmployees = List.from(employees);
     } else {
-      filteredEmployees = employees.where((e) {
-        final name = e.name.toLowerCase();
-        final position = e.job.toLowerCase();
-        final phone = e.phone.toLowerCase();
-        
-        return name.contains(value) || position.contains(value) || phone.contains(value);
-      }).toList();
+      filteredEmployees =
+          employees.where((e) => e.name.contains(value)).toList();
     }
+    notifyListeners();
   }
 }
