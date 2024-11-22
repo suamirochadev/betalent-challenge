@@ -6,26 +6,47 @@ class EmployeeStores extends ChangeNotifier {
   final EmployeesRepository repository;
   EmployeeStores(this.repository);
 
-  List<EmployeesModel> employees = [];
-  List<EmployeesModel> filteredEmployees = [];
+  final List<int> _expandedEmployees = [];
+  List<int> get expandedEmployees => _expandedEmployees;
+
+  List<EmployeesModel> _employees = [];
+  List<EmployeesModel> get employees => _employees;
+
+  List<EmployeesModel> _filteredEmployees = [];
+  List<EmployeesModel> get filteredEmployees => _filteredEmployees;
+
   bool isLoading = false;
   String? error;
 
-
   Future<void> loadEmployees() async {
     isLoading = true;
-    employees = await repository.getAllEmployees();
+    notifyListeners();
+    _employees = await repository.getAllEmployees();
+    _filteredEmployees = _employees;
     isLoading = false;
     notifyListeners();
   }
 
   void filterEmployees(String value) {
     if (value.isEmpty) {
-      filteredEmployees = List.from(employees);
+      _filteredEmployees = employees;
+      notifyListeners();
+      return;
     } else {
-      filteredEmployees =
-          employees.where((e) => e.name.contains(value)).toList();
+      _filteredEmployees = employees.where((employee) {
+        return employee.name.contains(value);
+      }).toList();
     }
+    notifyListeners();
+  }
+
+  void toggleEmployee(int index) {
+    if (_expandedEmployees.contains(index)) {
+      _expandedEmployees.remove(index);
+    
+  } else {
+    _expandedEmployees.add(index);
+  }
     notifyListeners();
   }
 }
